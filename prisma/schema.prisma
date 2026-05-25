@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "sqlite"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 // ===================== USERS & AUTH =====================
@@ -207,9 +206,9 @@ model Enrollment {
   enrolledAt      DateTime  @default(now())
   completedAt     DateTime?
 
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Enrollment_userId_fkey")
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  client          Client?   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Enrollment_clientUserId_fkey")
+  client          Client?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([userId])

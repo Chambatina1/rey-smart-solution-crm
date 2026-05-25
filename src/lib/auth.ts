@@ -39,10 +39,11 @@ export function extractToken(request: NextRequest): string | null {
   return authHeader.substring(7)
 }
 
+// FREE ACCESS MODE - No auth required. Returns a default admin user for all requests.
+// TODO: Re-enable authentication when ready for production
 export async function getAuthUser(request: NextRequest): Promise<{ userId: string; email: string; role: string } | null> {
-  const token = extractToken(request)
-  if (!token) return null
-  return verifyToken(token)
+  // Bypass auth - always return admin access
+  return { userId: 'demo-admin', email: 'admin@reysmartsolution.com', role: 'admin' }
 }
 
 export function jsonResponse(data: unknown, status = 200) {
