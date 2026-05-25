@@ -28,6 +28,11 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Create db directory for SQLite
+RUN mkdir -p db && chown nextjs:nodejs db
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -42,5 +47,6 @@ EXPOSE 10000
 
 ENV PORT=10000
 ENV HOSTNAME="0.0.0.0"
+ENV DATABASE_URL="file:/app/db/crm.db"
 
 CMD ["node", "server.js"]
