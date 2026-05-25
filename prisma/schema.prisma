@@ -207,9 +207,9 @@ model Enrollment {
   enrolledAt      DateTime  @default(now())
   completedAt     DateTime?
 
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Enrollment_userId_fkey")
   course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  client          Client?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client          Client?   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Enrollment_clientUserId_fkey")
 
   @@unique([userId, courseId])
   @@index([userId])
