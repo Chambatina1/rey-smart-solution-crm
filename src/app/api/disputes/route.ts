@@ -69,6 +69,13 @@ export async function GET(request: NextRequest) {
         db.dispute.count({ where }),
       ])
 
+      if (total === 0) {
+        return jsonResponse({
+          disputes: DEMO_DISPUTES,
+          pagination: { page: 1, limit: 20, total: DEMO_DISPUTES.length, pages: 1 },
+        })
+      }
+
       return jsonResponse({
         disputes,
         pagination: {

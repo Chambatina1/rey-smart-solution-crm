@@ -32,6 +32,10 @@ export async function GET(request: NextRequest) {
         select: { creditScore: true },
       })
 
+      if (clients.length === 0) {
+        return jsonResponse(DEMO_DISTRIBUTION)
+      }
+
       const ranges = [
         { label: '300-399', min: 300, max: 399 },
         { label: '400-499', min: 400, max: 499 },

@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { getAuthUser, errorResponse, jsonResponse } from '@/lib/auth'
-import { Prisma } from '@prisma/client'
 
 const DEMO_STATS = {
   clients: {
@@ -36,22 +35,10 @@ const DEMO_STATS = {
       { outcome: 'reinvestigate', count: 32 },
     ],
   },
-  education: {
-    courses: 12,
-    conferences: 8,
-  },
-  appointments: {
-    upcoming: 23,
-  },
-  messages: {
-    unread: 7,
-  },
-  revenue: {
-    total: 187420,
-    monthly: 24350,
-    pendingInvoices: 15,
-    totalPayments: 423,
-  },
+  education: { courses: 12, conferences: 8 },
+  appointments: { upcoming: 23 },
+  messages: { unread: 7 },
+  revenue: { total: 187420, monthly: 24350, pendingInvoices: 15, totalPayments: 423 },
 }
 
 export async function GET(request: NextRequest) {
@@ -63,13 +50,19 @@ export async function GET(request: NextRequest) {
       const now = new Date()
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
+      const [totalClients] = await Promise.all([db.client.count()])
+
+      // If database is empty, return demo data
+      if (totalClients === 0) {
+        console.info('DB is empty, returning demo stats')
+        return jsonResponse(DEMO_STATS)
+      }
+
       const [
-        totalClients, activeClients, totalDisputes, activeDisputes,
-        completedDisputes, totalCourses, totalConferences,
-        upcomingAppointments, unreadMessages, totalRevenue,
-        monthlyRevenue, pendingInvoices, totalPayments,
+        activeClients, totalDisputes, activeDisputes, completedDisputes,
+        totalCourses, totalConferences, upcomingAppointments, unreadMessages,
+        totalRevenue, monthlyRevenue, pendingInvoices, totalPayments,
       ] = await Promise.all([
-        db.client.count(),
         db.client.count({ where: { status: 'active' } }),
         db.dispute.count(),
         db.dispute.count({ where: { status: { in: ['sent', 'in_progress'] } } }),
@@ -92,32 +85,15 @@ export async function GET(request: NextRequest) {
       ])
 
       return jsonResponse({
-        clients: {
-          total: totalClients,
-          active: activeClients,
-          byStatus: clientsByStatus.map((s) => ({ status: s.status, count: s._count })),
-        },
-        disputes: {
-          total: totalDisputes,
-          active: activeDisputes,
-          completed: completedDisputes,
-          byBureau: disputesByBureau.map((b) => ({ bureau: b.bureau, count: b._count })),
-          byStatus: disputesByStatus.map((s) => ({ status: s.status, count: s._count })),
-          outcomes: disputeOutcomes.map((o) => ({ outcome: o.responseStatus, count: o._count })),
-        },
+        clients: { total: totalClients, active: activeClients, byStatus: clientsByStatus.map((s) => ({ status: s.status, count: s._count })) },
+        disputes: { total: totalDisputes, active: activeDisputes, completed: completedDisputes, byBureau: disputesByBureau.map((b) => ({ bureau: b.bureau, count: b._count })), byStatus: disputesByStatus.map((s) => ({ status: s.status, count: s._count })), outcomes: disputeOutcomes.map((o) => ({ outcome: o.responseStatus, count: o._count })) },
         education: { courses: totalCourses, conferences: totalConferences },
         appointments: { upcoming: upcomingAppointments },
         messages: { unread: unreadMessages },
-        revenue: {
-          total: totalRevenue._sum.amount || 0,
-          monthly: monthlyRevenue._sum.amount || 0,
-          pendingInvoices,
-          totalPayments,
-        },
+        revenue: { total: totalRevenue._sum.amount || 0, monthly: monthlyRevenue._sum.amount || 0, pendingInvoices, totalPayments },
       })
     } catch (dbError) {
-      // If DB is not available, return demo data
-      console.warn('DB unavailable, returning demo stats:', dbError)
+      console.warn('DB error, returning demo stats:', dbError)
       return jsonResponse(DEMO_STATS)
     }
   } catch (error) {

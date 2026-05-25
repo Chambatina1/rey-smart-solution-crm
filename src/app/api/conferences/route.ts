@@ -47,6 +47,13 @@ export async function GET(request: NextRequest) {
         db.conference.count({ where }),
       ])
 
+      if (total === 0) {
+        return jsonResponse({
+          conferences: DEMO_CONFERENCES,
+          pagination: { page: 1, limit: 20, total: DEMO_CONFERENCES.length, pages: 1 },
+        })
+      }
+
       return jsonResponse({
         conferences,
         pagination: {

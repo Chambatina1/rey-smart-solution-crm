@@ -55,6 +55,13 @@ export async function GET(request: NextRequest) {
         db.invoice.count({ where }),
       ])
 
+      if (total === 0) {
+        return jsonResponse({
+          invoices: DEMO_INVOICES,
+          pagination: { page: 1, limit: 20, total: DEMO_INVOICES.length, pages: 1 },
+        })
+      }
+
       return jsonResponse({
         invoices,
         pagination: {

@@ -55,6 +55,13 @@ export async function GET(request: NextRequest) {
         db.course.count({ where }),
       ])
 
+      if (total === 0) {
+        return jsonResponse({
+          courses: DEMO_COURSES,
+          pagination: { page: 1, limit: 20, total: DEMO_COURSES.length, pages: 1 },
+        })
+      }
+
       return jsonResponse({
         courses,
         pagination: {

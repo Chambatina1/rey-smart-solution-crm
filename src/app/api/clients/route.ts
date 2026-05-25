@@ -74,6 +74,14 @@ export async function GET(request: NextRequest) {
         db.client.count({ where }),
       ])
 
+      // If database is empty, return demo data
+      if (total === 0) {
+        return jsonResponse({
+          clients: DEMO_CLIENTS,
+          pagination: { page: 1, limit: 20, total: DEMO_CLIENTS.length, pages: 1 },
+        })
+      }
+
       return jsonResponse({
         clients,
         pagination: {

@@ -28,6 +28,10 @@ export async function GET(request: NextRequest) {
         include: { user: { select: { id: true, name: true, avatar: true } } },
       })
 
+      if (activities.length === 0) {
+        return jsonResponse(DEMO_ACTIVITY)
+      }
+
       return jsonResponse(activities)
     } catch (dbError) {
       console.warn('DB unavailable, returning demo activity:', dbError)
